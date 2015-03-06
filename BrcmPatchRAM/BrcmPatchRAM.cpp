@@ -116,7 +116,7 @@ IOService* BrcmPatchRAM::probe(IOService *provider, SInt32 *probeScore)
     mProductId = mDevice->GetProductID();
 
     uploadFirmware();
-    publishPersonality();
+    mTimerState = kWaitForPublish;
 
     clock_get_uptime(&end_time);
     absolutetime_to_nanoseconds(end_time - start_time, &nano_secs);
@@ -135,11 +135,28 @@ bool BrcmPatchRAM::start(IOService *provider)
     registerPowerDriver(this, myTwoStates, 2);
     provider->joinPMtree(this);
 
+    IOWorkLoop* workLoop = getWorkLoop();
+    mTimer = IOTimerEventSource::timerEventSource(this, OSMemberFunctionCast(IOTimerEventSource::Action, this, &BrcmPatchRAM::onTimerEvent));
+    if (mTimer && workLoop)
+    {
+        workLoop->addEventSource(mTimer);
+        if (mTimerState != kNotActive)
+            mTimer->setTimeoutMS(5000);
+    }
+
     return true;
 }
 
 void BrcmPatchRAM::stop(IOService* provider)
 {
+    IOWorkLoop* workLoop = getWorkLoop();
+    if (mTimer)
+    {
+        mTimer->cancelTimeout();
+        workLoop->removeEventSource(mTimer);
+        mTimer->release();
+        mTimer = NULL;
+    }
     if (mFirmwareStore)
     {
         mFirmwareStore->release();
@@ -149,6 +166,31 @@ void BrcmPatchRAM::stop(IOService* provider)
     PMstop();
 
     super::stop(provider);
+}
+
+IOReturn BrcmPatchRAM::onTimerEvent()
+{
+    DebugLog("onTimerEvent: mTimerState=%d\n", mTimerState);
+
+    switch (mTimerState)
+    {
+        case kWaitForPublish:
+            publishPersonality();
+            mTimerState = kWaitForUnpublish;
+            mTimer->setTimeoutMS(5000);
+            break;
+
+        case kWaitForUnpublish:
+            removePersonality();
+            mTimerState = kNotActive;
+            break;
+
+        case kNotActive:
+            DebugLog("received timer event with no active state");
+            break;
+    }
+
+    return kIOReturnSuccess;
 }
 
 void BrcmPatchRAM::uploadFirmware()

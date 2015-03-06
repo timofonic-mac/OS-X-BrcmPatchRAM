@@ -22,6 +22,7 @@
 #include <IOKit/IOService.h>
 #include <IOKit/IOLib.h>
 #include <IOKit/usb/IOUSBDevice.h>
+#include <IOKit/IOTimerEventSource.h>
 
 #include "BrcmFirmwareStore.h"
 
@@ -50,6 +51,11 @@ private:
     static OSString* brcmBundleIdentifier;
     static OSString* brcmIOClass;
     static bool initBrcmStrings();
+
+    IOTimerEventSource* mTimer = NULL;
+    enum { kNotActive, kWaitForPublish, kWaitForUnpublish } mTimerState = kNotActive;
+    IOReturn onTimerEvent(void);
+
 #ifdef DEBUG
     void printPersonalities();
 #endif
