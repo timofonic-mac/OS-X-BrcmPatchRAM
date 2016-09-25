@@ -1,3 +1,11 @@
+###This is fork of RehabMan's BrcmPatchRAM repo
+
+The purpose of this fork is for changes of the timings to support USB BT on the Lenovo T460.
+
+My build environment is currently Xcode 8, using SDK 10.11, targeting OS X 10.11.
+
+###--------------------- From RehabMan -----------------------------------------
+
 ###BrcmPatchRAM -- RehabMan fork
 
 For the most part this fork is kept in sync with the-darkvoid's verson.  We are working together to improve the project.
