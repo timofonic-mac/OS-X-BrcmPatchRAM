@@ -162,7 +162,8 @@ IOService* BrcmPatchRAM::probe(IOService *provider, SInt32 *probeScore)
 #endif
 
     clock_get_uptime(&start_time);
-
+// tjl
+    IOSleep(500);
 #ifndef NON_RESIDENT
     mWorkLock = IOLockAlloc();
     if (!mWorkLock)
@@ -190,7 +191,7 @@ IOService* BrcmPatchRAM::probe(IOService *provider, SInt32 *probeScore)
 #ifndef NON_RESIDENT
     // longest time seen in normal re-probe was ~200ms (400+ms on 10.11)
     if (version_major >= 15)
-        mBlurpWait = 800;
+        mBlurpWait = 1000;
     else
         mBlurpWait = 400;
 #endif
@@ -417,7 +418,7 @@ void BrcmPatchRAM::uploadFirmwareThread(void *arg, wait_result_t wait)
     {
         BrcmPatchRAM* me = static_cast<BrcmPatchRAM*>(arg);
         me->resetDevice();
-        IOSleep(20);
+        IOSleep(200);
         me->uploadFirmware();
 #ifndef TARGET_ELCAPITAN
         me->publishPersonality();
@@ -453,6 +454,7 @@ void BrcmPatchRAM::uploadFirmware()
     {
         // Print out additional device information
         printDeviceInfo();
+        IOSleep(100);
         
         // Set device configuration to composite configuration index 0
         // Obtain first interface
@@ -464,6 +466,7 @@ void BrcmPatchRAM::uploadFirmware()
             if (mInterruptPipe.getValidatedPipe() && mBulkPipe.getValidatedPipe())
             {
                 DebugLog("got pipes\n");
+                IOSleep(100);
                 if (performUpgrade())
                     if (mDeviceState == kUpdateComplete)
                         AlwaysLog("[%04x:%04x]: Firmware upgrade completed successfully.\n", mVendorId, mProductId);
@@ -1182,7 +1185,8 @@ bool BrcmPatchRAM::performUpgrade()
 #ifdef DEBUG
     DeviceState previousState = kUnknown;
 #endif
-
+// tjl
+    IOSleep(100);
     IOLockLock(mCompletionLock);
     mDeviceState = kInitialize;
 
@@ -1239,7 +1243,7 @@ bool BrcmPatchRAM::performUpgrade()
                 // If this IOSleep is not issued, the device is not ready to receive
                 // the firmware instructions and we will deadlock due to lack of
                 // responses.
-                IOSleep(10);
+                IOSleep(100);
 
                 // Write first instruction to trigger response
                 if ((data = OSDynamicCast(OSData, iterator->getNextObject())))
