@@ -454,7 +454,7 @@ void BrcmPatchRAM::uploadFirmware()
     {
         // Print out additional device information
         printDeviceInfo();
-        IOSleep(100);
+        IOSleep(200);
         
         // Set device configuration to composite configuration index 0
         // Obtain first interface
@@ -466,7 +466,7 @@ void BrcmPatchRAM::uploadFirmware()
             if (mInterruptPipe.getValidatedPipe() && mBulkPipe.getValidatedPipe())
             {
                 DebugLog("got pipes\n");
-                IOSleep(100);
+                IOSleep(200);
                 if (performUpgrade())
                     if (mDeviceState == kUpdateComplete)
                         AlwaysLog("[%04x:%04x]: Firmware upgrade completed successfully.\n", mVendorId, mProductId);
@@ -1186,7 +1186,7 @@ bool BrcmPatchRAM::performUpgrade()
     DeviceState previousState = kUnknown;
 #endif
 // tjl
-    IOSleep(100);
+    IOSleep(200);
     IOLockLock(mCompletionLock);
     mDeviceState = kInitialize;
 
@@ -1243,7 +1243,7 @@ bool BrcmPatchRAM::performUpgrade()
                 // If this IOSleep is not issued, the device is not ready to receive
                 // the firmware instructions and we will deadlock due to lack of
                 // responses.
-                IOSleep(100);
+                IOSleep(200);
 
                 // Write first instruction to trigger response
                 if ((data = OSDynamicCast(OSData, iterator->getNextObject())))
