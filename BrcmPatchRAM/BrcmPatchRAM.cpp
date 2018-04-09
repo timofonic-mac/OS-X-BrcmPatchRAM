@@ -163,7 +163,7 @@ IOService* BrcmPatchRAM::probe(IOService *provider, SInt32 *probeScore)
 
     clock_get_uptime(&start_time);
 // tjl
-    IOSleep(500);
+    IOSleep(200);
 #ifndef NON_RESIDENT
     mWorkLock = IOLockAlloc();
     if (!mWorkLock)
@@ -418,7 +418,7 @@ void BrcmPatchRAM::uploadFirmwareThread(void *arg, wait_result_t wait)
     {
         BrcmPatchRAM* me = static_cast<BrcmPatchRAM*>(arg);
         me->resetDevice();
-        IOSleep(200);
+        IOSleep(400);
         me->uploadFirmware();
 #ifndef TARGET_ELCAPITAN
         me->publishPersonality();
@@ -454,7 +454,7 @@ void BrcmPatchRAM::uploadFirmware()
     {
         // Print out additional device information
         printDeviceInfo();
-        IOSleep(200);
+        IOSleep(400);
         
         // Set device configuration to composite configuration index 0
         // Obtain first interface
@@ -466,7 +466,7 @@ void BrcmPatchRAM::uploadFirmware()
             if (mInterruptPipe.getValidatedPipe() && mBulkPipe.getValidatedPipe())
             {
                 DebugLog("got pipes\n");
-                IOSleep(200);
+                IOSleep(400);
                 if (performUpgrade())
                     if (mDeviceState == kUpdateComplete)
                         AlwaysLog("[%04x:%04x]: Firmware upgrade completed successfully.\n", mVendorId, mProductId);
@@ -1243,7 +1243,7 @@ bool BrcmPatchRAM::performUpgrade()
                 // If this IOSleep is not issued, the device is not ready to receive
                 // the firmware instructions and we will deadlock due to lack of
                 // responses.
-                IOSleep(200);
+                IOSleep(400);
 
                 // Write first instruction to trigger response
                 if ((data = OSDynamicCast(OSData, iterator->getNextObject())))
